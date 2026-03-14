@@ -9,37 +9,37 @@
 <body>
   <div class="test-container">
     <!-- 加载状态 -->
-    <div id="loading-screen" class="loading-screen">
-      <div class="loading-spinner"></div>
+    <div id="loading-screen" class="loading-screen" role="status" aria-live="polite">
+      <div class="loading-spinner" aria-hidden="true"></div>
       <p class="loading-text">正在验证...</p>
     </div>
 
     <!-- 错误状态 -->
-    <div id="error-screen" class="error-screen" style="display: none;">
-      <div class="error-icon">⚠️</div>
+    <div id="error-screen" class="error-screen" style="display: none;" role="alert" aria-live="assertive">
+      <div class="error-icon" aria-hidden="true">⚠️</div>
       <h2 class="error-title">访问受限</h2>
       <p id="error-message" class="error-message"></p>
     </div>
 
     <!-- 测试主体 -->
-    <div id="test-screen" class="test-screen" style="display: none;">
-      <header class="test-header">
+    <div id="test-screen" class="test-screen" style="display: none;" role="main" aria-label="测试题目">
+      <header class="test-header" role="banner">
         <div class="progress-container">
-          <div class="progress-bar">
+          <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-label="测试进度">
             <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
           </div>
-          <span class="progress-text" id="progress-text">1/20</span>
+          <span class="progress-text" id="progress-text" aria-live="polite">1/20</span>
         </div>
       </header>
 
-      <main class="question-card" id="question-card">
+      <main class="question-card" id="question-card" role="region" aria-labelledby="question-text">
         <h2 class="question-text" id="question-text"></h2>
-        <div class="options-grid" id="options-grid"></div>
+        <div class="options-grid" id="options-grid" role="radiogroup" aria-label="选项列表"></div>
       </main>
 
-      <footer class="test-footer">
-        <button class="prev-btn" id="prev-btn" style="visibility: hidden;">上一题</button>
-        <button class="next-btn" id="next-btn" disabled>下一题</button>
+      <footer class="test-footer" role="contentinfo">
+        <button class="prev-btn" id="prev-btn" style="visibility: hidden;" aria-label="上一题">上一题</button>
+        <button class="next-btn" id="next-btn" disabled aria-label="下一题">下一题</button>
       </footer>
     </div>
   </div>

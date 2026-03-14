@@ -9,12 +9,66 @@ const url = require('url');
 
 const PORT = 3000;
 
+// ==================== 限流配置 ====================
+const RATE_LIMIT = {
+  windowMs: 60 * 1000,      // 1 分钟窗口
+  maxRequests: 30,          // 最多 30 次请求
+  maxVerify: 10             // 验证接口最多 10 次
+};
+
+// 请求记录
+const requestStore = new Map();
+
+// 清理过期记录（每 5 分钟）
+const cleanupTimer = setInterval(() => {
+  const now = Date.now();
+  for (const [ip, data] of requestStore.entries()) {
+    if (now - data.startTime > RATE_LIMIT.windowMs) {
+      requestStore.delete(ip);
+    }
+  }
+}, 5 * 60 * 1000);
+
+// 检查限流
+function checkRateLimit(ip, isVerify = false) {
+  const now = Date.now();
+  let data = requestStore.get(ip);
+
+  if (!data || now - data.startTime > RATE_LIMIT.windowMs) {
+    data = { startTime: now, total: 0, verify: 0 };
+    requestStore.set(ip, data);
+  }
+
+  data.total++;
+  if (isVerify) data.verify++;
+
+  const maxRequests = isVerify ? RATE_LIMIT.maxVerify : RATE_LIMIT.maxRequests;
+
+  if (data.verify > RATE_LIMIT.maxVerify) {
+    return { allowed: false, message: '验证请求过于频繁，请稍后再试' };
+  }
+
+  if (data.total > RATE_LIMIT.maxRequests) {
+    return { allowed: false, message: '请求过于频繁，请稍后再试' };
+  }
+
+  return { allowed: true };
+}
+
+// 获取客户端 IP
+function getClientIP(req) {
+  return req.headers['x-forwarded-for']?.split(',')[0] ||
+         req.headers['x-real-ip'] ||
+         req.connection?.remoteAddress ||
+         '127.0.0.1';
+}
+
 // MIME 类型映射
 const MIME_TYPES = {
-  '.html': 'text/html',
-  '.css': 'text/css',
-  '.js': 'application/javascript',
-  '.json': 'application/json',
+  '.html': 'text/html; charset=utf-8',
+  '.css': 'text/css; charset=utf-8',
+  '.js': 'application/javascript; charset=utf-8',
+  '.json': 'application/json; charset=utf-8',
   '.png': 'image/png',
   '.jpg': 'image/jpeg',
   '.gif': 'image/gif',
@@ -45,15 +99,47 @@ function parseBody(req) {
   });
 }
 
-// 处理验证码 API
-async function handleVerify(req, res, query) {
-  const codePath = path.join(__dirname, 'data/codes', `${query.code}.json`);
-
-  // 设置 CORS
+// 发送 JSON 响应
+function sendJSON(res, statusCode, data) {
+  res.setHeader('Content-Type', 'application/json; charset=utf-8');
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  res.setHeader('Content-Type', 'application/json');
+  res.writeHead(statusCode);
+  res.end(JSON.stringify(data));
+}
+
+// 发送文件
+function sendFile(res, filePath, statusCode = 200) {
+  const ext = path.extname(filePath).toLowerCase();
+  const contentType = MIME_TYPES[ext] || 'application/octet-stream';
+
+  fs.readFile(filePath, (err, content) => {
+    if (err) {
+      res.writeHead(404);
+      res.end('File not found');
+      return;
+    }
+    res.writeHead(statusCode, {
+      'Content-Type': contentType,
+      'Cache-Control': 'no-cache, no-store, must-revalidate'
+    });
+    res.end(content);
+  });
+}
+
+// 处理验证码 API
+async function handleVerify(req, res, query) {
+  const clientIP = getClientIP(req);
+
+  // 限流检查
+  const limitResult = checkRateLimit(clientIP, true);
+  if (!limitResult.allowed) {
+    sendJSON(res, 429, { valid: false, message: limitResult.message });
+    return;
+  }
+
+  const codePath = path.join(__dirname, 'data/codes', `${query.code}.json`);
 
   // 处理 OPTIONS 预检
   if (req.method === 'OPTIONS') {
@@ -65,23 +151,20 @@ async function handleVerify(req, res, query) {
   // GET - 验证验证码
   if (req.method === 'GET') {
     if (!query.code) {
-      res.writeHead(400);
-      res.end(JSON.stringify({ valid: false, message: '缺少验证码' }));
+      sendJSON(res, 400, { valid: false, message: '缺少验证码' });
       return;
     }
 
     try {
       if (!fs.existsSync(codePath)) {
-        res.writeHead(200);
-        res.end(JSON.stringify({ valid: false, message: '验证码无效' }));
+        sendJSON(res, 200, { valid: false, message: '验证码无效' });
         return;
       }
 
       const codeData = JSON.parse(fs.readFileSync(codePath, 'utf8'));
 
       if (codeData.status === 1) {
-        res.writeHead(200);
-        res.end(JSON.stringify({ valid: false, message: '验证码已被使用' }));
+        sendJSON(res, 200, { valid: false, message: '验证码已被使用' });
         return;
       }
 
@@ -91,17 +174,14 @@ async function handleVerify(req, res, query) {
       const hoursPassed = (now - createdAt) / (1000 * 60 * 60);
 
       if (hoursPassed > 24) {
-        res.writeHead(200);
-        res.end(JSON.stringify({ valid: false, message: '验证码已过期' }));
+        sendJSON(res, 200, { valid: false, message: '验证码已过期' });
         return;
       }
 
-      res.writeHead(200);
-      res.end(JSON.stringify({ valid: true, message: '验证通过' }));
+      sendJSON(res, 200, { valid: true, message: '验证通过' });
     } catch (error) {
-      console.error('验证错误:', error);
-      res.writeHead(500);
-      res.end(JSON.stringify({ valid: false, message: '服务器错误' }));
+      console.error('[验证错误]', error.message);
+      sendJSON(res, 500, { valid: false, message: '服务器错误' });
     }
     return;
   }
@@ -112,23 +192,20 @@ async function handleVerify(req, res, query) {
     const code = body.code;
 
     if (!code) {
-      res.writeHead(400);
-      res.end(JSON.stringify({ success: false, message: '缺少验证码' }));
+      sendJSON(res, 400, { success: false, message: '缺少验证码' });
       return;
     }
 
     try {
       if (!fs.existsSync(codePath)) {
-        res.writeHead(400);
-        res.end(JSON.stringify({ success: false, message: '验证码不存在' }));
+        sendJSON(res, 400, { success: false, message: '验证码不存在' });
         return;
       }
 
       const codeData = JSON.parse(fs.readFileSync(codePath, 'utf8'));
 
       if (codeData.status === 1) {
-        res.writeHead(400);
-        res.end(JSON.stringify({ success: false, message: '验证码已被使用' }));
+        sendJSON(res, 400, { success: false, message: '验证码已被使用' });
         return;
       }
 
@@ -138,18 +215,15 @@ async function handleVerify(req, res, query) {
 
       fs.writeFileSync(codePath, JSON.stringify(codeData, null, 2));
 
-      res.writeHead(200);
-      res.end(JSON.stringify({ success: true, message: '已标记为已使用' }));
+      sendJSON(res, 200, { success: true, message: '已标记为已使用' });
     } catch (error) {
-      console.error('标记错误:', error);
-      res.writeHead(500);
-      res.end(JSON.stringify({ success: false, message: '服务器错误' }));
+      console.error('[标记错误]', error.message);
+      sendJSON(res, 500, { success: false, message: '服务器错误' });
     }
     return;
   }
 
-  res.writeHead(405);
-  res.end(JSON.stringify({ error: '不支持的方法' }));
+  sendJSON(res, 405, { error: '不支持的方法' });
 }
 
 // 发送文件
@@ -174,7 +248,7 @@ const server = http.createServer(async (req, res) => {
   let pathname = parsedUrl.pathname;
   const query = parsedUrl.query;
 
-  console.log(`${req.method} ${pathname}`);
+  console.log(`[ ${new Date().toLocaleTimeString()} ] ${req.method} ${pathname}`);
 
   // 处理 API 路由
   if (pathname.startsWith('/api/')) {
@@ -182,8 +256,7 @@ const server = http.createServer(async (req, res) => {
       await handleVerify(req, res, query);
       return;
     }
-    res.writeHead(404);
-    res.end(JSON.stringify({ error: 'API not found' }));
+    sendJSON(res, 404, { error: 'API not found' });
     return;
   }
 
@@ -221,6 +294,40 @@ const server = http.createServer(async (req, res) => {
     res.end('Page not found');
   }
 });
+
+// 错误处理
+server.on('error', (err) => {
+  if (err.code === 'EADDRINUSE') {
+    console.error(`端口 ${PORT} 已被占用`);
+  } else {
+    console.error('服务器错误:', err);
+  }
+  process.exit(1);
+});
+
+// 优雅关闭
+function gracefulShutdown(signal) {
+  console.log(`\n收到 ${signal} 信号，正在关闭服务器...`);
+  clearInterval(cleanupTimer);
+
+  server.close((err) => {
+    if (err) {
+      console.error('关闭失败:', err);
+      process.exit(1);
+    }
+    console.log('服务器已关闭');
+    process.exit(0);
+  });
+
+  // 如果 10 秒后还没关闭，强制退出
+  setTimeout(() => {
+    console.error('未能优雅关闭，强制退出');
+    process.exit(1);
+  }, 10000);
+}
+
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 
 server.listen(PORT, () => {
   console.log(`\n🚀 本地服务器已启动`);

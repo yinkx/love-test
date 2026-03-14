@@ -5,15 +5,18 @@ node_modules/
 package-lock.json
 
 # 验证码文件（建议线上生成，不提交到 Git）
-# data/codes/*.json
+data/codes/*.json
+!data/codes/.gitkeep
 
 # 日志
 logs/
 *.log
+pm2/
 
 # 系统文件
 .DS_Store
 Thumbs.db
+._*
 
 # 编辑器
 .vscode/
@@ -25,3 +28,4 @@ Thumbs.db
 # 临时文件
 tmp/
 temp/
+.cache/

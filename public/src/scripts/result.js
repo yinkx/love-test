@@ -154,7 +154,7 @@ function animateScore(element, target) {
   }, 30);
 }
 
-// 渲染雷达图
+// 渲染雷达图（带动画）
 function renderRadarChart(scores) {
   const canvas = document.getElementById('radar-canvas');
   const ctx = canvas.getContext('2d');
@@ -164,97 +164,141 @@ function renderRadarChart(scores) {
 
   // 维度标签
   const labels = ["情绪", "行为", "理性", "边界"];
-  const values = [
+  const targetValues = [
     scores.emotion / 100,
     scores.behavior / 100,
     scores.rational / 100,
     scores.boundary / 100
   ];
 
+  // 当前动画值
+  let currentValues = [0, 0, 0, 0];
+  const animationSpeed = 0.05;
+
   // 清空画布
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  function clearCanvas() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
 
   // 绘制背景网格（5 层）
-  ctx.strokeStyle = '#E8D5D5';
-  ctx.lineWidth = 1;
-  for (let i = 1; i <= 5; i++) {
-    const ratio = i / 5;
-    const gridRadius = radius * ratio;
+  function drawGrid() {
+    ctx.strokeStyle = '#E8D5D5';
+    ctx.lineWidth = 1;
+    for (let i = 1; i <= 5; i++) {
+      const ratio = i / 5;
+      const gridRadius = radius * ratio;
 
+      ctx.beginPath();
+      for (let j = 0; j < 4; j++) {
+        const angle = (Math.PI / 2) - (j * Math.PI / 2);
+        const x = centerX + Math.cos(angle) * gridRadius;
+        const y = centerY - Math.sin(angle) * gridRadius;
+        if (j === 0) {
+          ctx.moveTo(x, y);
+        } else {
+          ctx.lineTo(x, y);
+        }
+      }
+      ctx.closePath();
+      ctx.stroke();
+    }
+  }
+
+  // 绘制轴线
+  function drawAxes() {
+    ctx.strokeStyle = '#D4A5A5';
+    ctx.lineWidth = 1.5;
+    for (let i = 0; i < 4; i++) {
+      const angle = (Math.PI / 2) - (i * Math.PI / 2);
+      const x = centerX + Math.cos(angle) * radius;
+      const y = centerY - Math.sin(angle) * radius;
+      ctx.beginPath();
+      ctx.moveTo(centerX, centerY);
+      ctx.lineTo(x, y);
+      ctx.stroke();
+    }
+  }
+
+  // 绘制数据区域
+  function drawDataArea(values) {
+    ctx.fillStyle = 'rgba(212, 165, 165, 0.5)';
+    ctx.strokeStyle = '#D4A5A5';
+    ctx.lineWidth = 2;
     ctx.beginPath();
-    for (let j = 0; j < 4; j++) {
-      const angle = (Math.PI / 2) - (j * Math.PI / 2);
-      const x = centerX + Math.cos(angle) * gridRadius;
-      const y = centerY - Math.sin(angle) * gridRadius;
-      if (j === 0) {
+    for (let i = 0; i < 4; i++) {
+      const angle = (Math.PI / 2) - (i * Math.PI / 2);
+      const dataRadius = radius * values[i];
+      const x = centerX + Math.cos(angle) * dataRadius;
+      const y = centerY - Math.sin(angle) * dataRadius;
+      if (i === 0) {
         ctx.moveTo(x, y);
       } else {
         ctx.lineTo(x, y);
       }
     }
     ctx.closePath();
+    ctx.fill();
     ctx.stroke();
   }
-
-  // 绘制轴线
-  ctx.strokeStyle = '#D4A5A5';
-  ctx.lineWidth = 1.5;
-  for (let i = 0; i < 4; i++) {
-    const angle = (Math.PI / 2) - (i * Math.PI / 2);
-    const x = centerX + Math.cos(angle) * radius;
-    const y = centerY - Math.sin(angle) * radius;
-    ctx.beginPath();
-    ctx.moveTo(centerX, centerY);
-    ctx.lineTo(x, y);
-    ctx.stroke();
-  }
-
-  // 绘制数据区域
-  ctx.fillStyle = 'rgba(212, 165, 165, 0.5)';
-  ctx.strokeStyle = '#D4A5A5';
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  for (let i = 0; i < 4; i++) {
-    const angle = (Math.PI / 2) - (i * Math.PI / 2);
-    const dataRadius = radius * values[i];
-    const x = centerX + Math.cos(angle) * dataRadius;
-    const y = centerY - Math.sin(angle) * dataRadius;
-    if (i === 0) {
-      ctx.moveTo(x, y);
-    } else {
-      ctx.lineTo(x, y);
-    }
-  }
-  ctx.closePath();
-  ctx.fill();
-  ctx.stroke();
 
   // 绘制数据点
-  ctx.fillStyle = '#D4A5A5';
-  for (let i = 0; i < 4; i++) {
-    const angle = (Math.PI / 2) - (i * Math.PI / 2);
-    const dataRadius = radius * values[i];
-    const x = centerX + Math.cos(angle) * dataRadius;
-    const y = centerY - Math.sin(angle) * dataRadius;
-    ctx.beginPath();
-    ctx.arc(x, y, 5, 0, Math.PI * 2);
-    ctx.fill();
+  function drawDataPoints(values) {
+    ctx.fillStyle = '#D4A5A5';
+    for (let i = 0; i < 4; i++) {
+      const angle = (Math.PI / 2) - (i * Math.PI / 2);
+      const dataRadius = radius * values[i];
+      const x = centerX + Math.cos(angle) * dataRadius;
+      const y = centerY - Math.sin(angle) * dataRadius;
+      ctx.beginPath();
+      ctx.arc(x, y, 5, 0, Math.PI * 2);
+      ctx.fill();
+    }
   }
 
   // 绘制标签
-  ctx.fillStyle = '#4A4A4A';
-  ctx.font = '14px system-ui';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  const labelPositions = [
-    { x: centerX, y: centerY - radius - 20 },
-    { x: centerX + radius + 30, y: centerY },
-    { x: centerX, y: centerY + radius + 20 },
-    { x: centerX - radius - 30, y: centerY }
-  ];
-  labels.forEach((label, i) => {
-    ctx.fillText(label, labelPositions[i].x, labelPositions[i].y);
-  });
+  function drawLabels() {
+    ctx.fillStyle = '#4A4A4A';
+    ctx.font = '14px system-ui';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    const labelPositions = [
+      { x: centerX, y: centerY - radius - 20 },
+      { x: centerX + radius + 30, y: centerY },
+      { x: centerX, y: centerY + radius + 20 },
+      { x: centerX - radius - 30, y: centerY }
+    ];
+    labels.forEach((label, i) => {
+      ctx.fillText(label, labelPositions[i].x, labelPositions[i].y);
+    });
+  }
+
+  // 动画循环
+  function animate() {
+    let shouldContinue = false;
+
+    // 更新当前值
+    for (let i = 0; i < 4; i++) {
+      if (currentValues[i] < targetValues[i]) {
+        currentValues[i] += (targetValues[i] - currentValues[i]) * animationSpeed;
+        shouldContinue = true;
+      }
+    }
+
+    // 绘制所有元素
+    clearCanvas();
+    drawGrid();
+    drawAxes();
+    drawDataArea(currentValues);
+    drawDataPoints(currentValues);
+    drawLabels();
+
+    if (shouldContinue) {
+      requestAnimationFrame(animate);
+    }
+  }
+
+  // 启动动画
+  animate();
 }
 
 // 渲染维度分析
@@ -345,16 +389,52 @@ shareBtn.addEventListener('click', () => {
   shareScore.textContent = `${totalScore}分`;
   shareDesc.textContent = levelDescriptions[level.name] || '';
   shareModal.style.display = 'flex';
+
+  // 聚焦到关闭按钮
+  setTimeout(() => modalClose.focus(), 100);
+
+  // 阻止背景滚动
+  document.body.style.overflow = 'hidden';
 });
 
 modalClose.addEventListener('click', () => {
   shareModal.style.display = 'none';
+  document.body.style.overflow = '';
+  shareBtn.focus();
 });
 
 // 关闭弹窗（点击背景）
 shareModal.addEventListener('click', (e) => {
   if (e.target === shareModal) {
     shareModal.style.display = 'none';
+    document.body.style.overflow = '';
+    shareBtn.focus();
+  }
+});
+
+// ESC 键关闭弹窗
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && shareModal.style.display === 'flex') {
+    shareModal.style.display = 'none';
+    document.body.style.overflow = '';
+    shareBtn.focus();
+  }
+});
+
+// 分享弹窗内的 Tab 键循环
+shareModal.addEventListener('keydown', (e) => {
+  if (e.key !== 'Tab') return;
+
+  const focusableElements = shareModal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+  const firstElement = focusableElements[0];
+  const lastElement = focusableElements[focusableElements.length - 1];
+
+  if (e.shiftKey && document.activeElement === firstElement) {
+    e.preventDefault();
+    lastElement.focus();
+  } else if (!e.shiftKey && document.activeElement === lastElement) {
+    e.preventDefault();
+    firstElement.focus();
   }
 });
 

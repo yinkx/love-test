@@ -2,85 +2,72 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>恋爱脑测试 - 探索你在爱里的样子</title>
   <meta name="description" content="温和治愈型情感测试，帮你了解自己在恋爱中的状态">
+  <meta name="keywords" content="恋爱脑测试，情感测试，心理测试，恋爱测试">
+  <meta name="author" content="恋爱脑测试">
+
+  <!-- 主题颜色 -->
+  <meta name="theme-color" content="#D4A5A5">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌸</text></svg>">
+
+  <!-- Open Graph / 分享卡片 -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="恋爱脑测试 - 探索你在爱里的样子">
+  <meta property="og:description" content="20 道精选题目，四维度深度分析，帮你了解自己在恋爱中的状态">
+  <meta property="og:image" content="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 400'><rect fill='%23D4A5A5' width='800' height='400'/><text x='50%25' y='50%25' fill='white' font-size='60' text-anchor='middle' dominant-baseline='middle'>🌸 恋爱脑测试 🌸</text></svg>">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="恋爱脑测试">
+  <meta name="twitter:description" content="20 道精选题目，四维度深度分析">
+
   <link rel="stylesheet" href="src/styles/main.css">
-  <style>
-    .input-section {
-      margin-top: 24px;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-      align-items: center;
-    }
-    .code-input-wrapper {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 8px;
-    }
-    .code-input {
-      width: 100%;
-      max-width: 200px;
-      padding: 12px 20px;
-      border: 2px solid var(--morandi-pink-light);
-      border-radius: 50px;
-      font-size: 1rem;
-      text-align: center;
-      outline: none;
-      transition: var(--transition);
-      text-transform: uppercase;
-    }
-    .code-input:focus {
-      border-color: var(--morandi-pink);
-      box-shadow: 0 0 0 3px rgba(212, 165, 165, 0.2);
-    }
-    .code-input::placeholder {
-      color: var(--text-light);
-      text-transform: none;
-    }
-    .input-note {
-      font-size: 0.875rem;
-      color: var(--text-light);
-    }
-  </style>
 </head>
 <body>
+  <div class="error-toast" id="error-toast" role="alert" aria-live="polite"></div>
+
   <div class="landing-container">
     <div class="landing-content">
       <h1 class="landing-title">恋爱脑测试</h1>
       <p class="landing-subtitle">探索你在爱里的样子</p>
 
-      <div class="landing-card">
+      <div class="landing-card" role="region" aria-label="测试特色">
         <div class="feature-item">
-          <span class="feature-icon">🌸</span>
+          <span class="feature-icon" aria-hidden="true">🌸</span>
           <span class="feature-text">20 道精选题目</span>
         </div>
         <div class="feature-item">
-          <span class="feature-icon">📊</span>
+          <span class="feature-icon" aria-hidden="true">📊</span>
           <span class="feature-text">四维度深度分析</span>
         </div>
         <div class="feature-item">
-          <span class="feature-icon">💝</span>
+          <span class="feature-icon" aria-hidden="true">💝</span>
           <span class="feature-text">温和治愈报告</span>
         </div>
       </div>
 
       <div class="input-section">
         <div class="code-input-wrapper">
+          <label for="code-input" class="visually-hidden">请输入验证码</label>
           <input
             type="text"
             id="code-input"
             class="code-input"
             placeholder="请输入验证码"
             maxlength="6"
+            autocomplete="off"
+            aria-label="测试验证码"
+            aria-describedby="input-note"
             onkeypress="if(event.key==='Enter') goToTest()"
           >
-          <p class="input-note">请输入官方渠道获取的测试验证码</p>
+          <p class="input-note" id="input-note">请输入官方渠道获取的测试验证码</p>
         </div>
 
-        <a href="#" class="start-btn" id="start-btn" onclick="goToTest()">开始测试</a>
+        <a href="#" class="start-btn" id="start-btn" onclick="goToTest()" role="button" tabindex="0">开始测试</a>
       </div>
 
       <p class="landing-note">测试约需 3-5 分钟 · 结果可保存分享</p>
@@ -88,16 +75,29 @@
   </div>
 
   <script>
+    function showToast(message) {
+      const toast = document.getElementById('error-toast');
+      toast.textContent = message;
+      toast.classList.add('show');
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 2000);
+    }
+
     function goToTest() {
       const codeInput = document.getElementById('code-input');
       const code = codeInput.value.trim().toUpperCase();
 
       if (!code) {
-        codeInput.placeholder = '请先输入验证码～';
-        codeInput.style.borderColor = '#FF8A8A';
-        setTimeout(() => {
-          codeInput.style.borderColor = 'var(--morandi-pink-light)';
-        }, 2000);
+        showToast('请先输入验证码～');
+        codeInput.focus();
+        return;
+      }
+
+      // 验证格式（6 位字母数字）
+      if (!/^[A-Z0-9]{6}$/.test(code)) {
+        showToast('验证码格式不正确');
+        codeInput.focus();
         return;
       }
 
@@ -114,6 +114,9 @@
         window.location.href = `./test.html?code=${codeFromUrl}`;
         return;
       }
+
+      // 自动聚焦输入框
+      document.getElementById('code-input').focus();
     });
   </script>
 </body>

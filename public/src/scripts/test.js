@@ -101,9 +101,12 @@ function renderQuestion() {
   const progress = ((state.currentIndex + 1) / questions.length) * 100;
   progressFill.style.width = `${progress}%`;
   progressText.textContent = `${state.currentIndex + 1}/${questions.length}`;
+  // 更新 ARIA
+  progressFill.parentElement.setAttribute('aria-valuenow', Math.round(progress));
 
   // 渲染题目文本
   questionText.textContent = question.question;
+  questionText.id = `question-${question.id}`;
 
   // 渲染选项
   optionsGrid.innerHTML = '';
@@ -112,19 +115,32 @@ function renderQuestion() {
     btn.className = 'option-btn';
     btn.textContent = option.text;
     btn.dataset.score = option.score;
+    btn.dataset.index = index;
+    btn.setAttribute('role', 'radio');
+    btn.setAttribute('aria-checked', 'false');
+    btn.setAttribute('tabindex', '-1');
     btn.addEventListener('click', () => selectOption(option.score));
     optionsGrid.appendChild(btn);
   });
 
-  // 如果之前已回答，恢复答案（但不禁用，允许重新选择）
+  // 如果之前已回答，恢复答案
   if (state.answers[state.currentIndex] !== undefined) {
     const buttons = optionsGrid.querySelectorAll('.option-btn');
     buttons.forEach(btn => {
       if (parseInt(btn.dataset.score) === state.answers[state.currentIndex]) {
         btn.classList.add('selected');
+        btn.setAttribute('aria-checked', 'true');
+        btn.setAttribute('tabindex', '0');
       }
-      // 不禁用按钮，允许用户在点击"下一题"前重新选择
     });
+  }
+
+  // 聚焦第一个选项（仅首次加载）
+  if (state.currentIndex === 0 && state.answers.length === 0) {
+    const firstButton = optionsGrid.querySelector('.option-btn');
+    if (firstButton) {
+      firstButton.focus();
+    }
   }
 
   // 更新按钮状态
@@ -137,17 +153,72 @@ function renderQuestion() {
 function selectOption(score) {
   state.answers[state.currentIndex] = score;
 
-  // 更新 UI - 只更新选中状态，不禁用按钮（允许重新选择）
+  // 更新 UI 和 ARIA 状态
   const buttons = optionsGrid.querySelectorAll('.option-btn');
   buttons.forEach(btn => {
-    if (parseInt(btn.dataset.score) === score) {
-      btn.classList.add('selected');
-    } else {
-      btn.classList.remove('selected');
-    }
+    const isSelected = parseInt(btn.dataset.score) === score;
+    btn.classList.toggle('selected', isSelected);
+    btn.setAttribute('aria-checked', isSelected ? 'true' : 'false');
+    btn.setAttribute('tabindex', isSelected ? '0' : '-1');
   });
   nextBtn.disabled = false;
 }
+
+// 键盘导航
+document.addEventListener('keydown', (e) => {
+  if (!state.verified) return;
+
+  const buttons = Array.from(optionsGrid.querySelectorAll('.option-btn'));
+  const currentSelectedIndex = buttons.findIndex(btn => btn.classList.contains('selected'));
+
+  // 数字键 1-4 快速选择
+  if (e.key >= '1' && e.key <= '4') {
+    e.preventDefault();
+    const index = parseInt(e.key) - 1;
+    if (buttons[index]) {
+      buttons[index].click();
+      buttons[index].focus();
+    }
+  }
+
+  // 方向键上下选择
+  if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+    e.preventDefault();
+    let nextIndex = currentSelectedIndex;
+
+    if (e.key === 'ArrowUp' && currentSelectedIndex > 0) {
+      nextIndex = currentSelectedIndex - 1;
+    } else if (e.key === 'ArrowDown' && currentSelectedIndex < buttons.length - 1) {
+      nextIndex = currentSelectedIndex + 1;
+    }
+
+    if (nextIndex !== currentSelectedIndex && nextIndex >= 0) {
+      buttons[nextIndex].click();
+      buttons[nextIndex].focus();
+    }
+  }
+
+  // Enter 键确认选择/下一题
+  if (e.key === 'Enter' && state.answers[state.currentIndex] !== undefined) {
+    e.preventDefault();
+    nextBtn.click();
+  }
+
+  // 左右方向键切换题目（Alt + 方向键）
+  if (e.altKey && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
+    e.preventDefault();
+    if (e.key === 'ArrowLeft' && state.currentIndex > 0) {
+      prevBtn.click();
+    } else if (e.key === 'ArrowRight' && state.currentIndex < questions.length - 1) {
+      nextBtn.click();
+    }
+  }
+
+  // Tab 键聚焦到选项
+  if (e.key === 'Tab' && currentSelectedIndex === -1) {
+    buttons[0].focus();
+  }
+});
 
 // 上一题
 prevBtn.addEventListener('click', () => {

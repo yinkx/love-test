@@ -26,6 +26,43 @@
   box-sizing: border-box;
 }
 
+/* 视觉隐藏类（无障碍访问） */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* 焦点样式（无障碍访问） */
+*:focus-visible {
+  outline: 2px solid var(--morandi-pink);
+  outline-offset: 2px;
+}
+
+/* 按钮焦点样式 */
+.option-btn:focus-visible,
+.prev-btn:focus-visible,
+.next-btn:focus-visible,
+.share-btn:focus-visible,
+.download-btn:focus-visible,
+.modal-close:focus-visible {
+  outline: 2px solid var(--morandi-pink);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(212, 165, 165, 0.3);
+}
+
+.code-input:focus {
+  border-color: var(--morandi-pink);
+  box-shadow: 0 0 0 3px rgba(212, 165, 165, 0.2);
+  outline: none;
+}
+
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   background: linear-gradient(135deg, var(--cream) 0%, var(--warm-yellow) 100%);
@@ -741,4 +778,69 @@ body {
 .share-card {
   user-select: text;
   -webkit-user-select: text;
+}
+
+/* ==================== 落地页输入框 ==================== */
+.input-section {
+  margin-top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: center;
+}
+
+.code-input-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.code-input {
+  width: 100%;
+  max-width: 200px;
+  padding: 12px 20px;
+  border: 2px solid var(--morandi-pink-light);
+  border-radius: 50px;
+  font-size: 1rem;
+  text-align: center;
+  outline: none;
+  transition: var(--transition);
+  text-transform: uppercase;
+}
+
+.code-input:focus {
+  border-color: var(--morandi-pink);
+  box-shadow: 0 0 0 3px rgba(212, 165, 165, 0.2);
+}
+
+.code-input::placeholder {
+  color: var(--text-light);
+  text-transform: none;
+}
+
+.input-note {
+  font-size: 0.875rem;
+  color: var(--text-light);
+}
+
+.error-toast {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-100%);
+  background: #FF8A8A;
+  color: white;
+  padding: 12px 24px;
+  border-radius: 50px;
+  font-size: 0.9rem;
+  opacity: 0;
+  transition: all 0.3s ease;
+  z-index: 9999;
+  box-shadow: 0 4px 16px rgba(255, 138, 138, 0.4);
+}
+
+.error-toast.show {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
 }
