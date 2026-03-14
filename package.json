@@ -1,0 +1,20 @@
+{
+  "name": "love-brain-test",
+  "version": "1.0.0",
+  "description": "恋爱脑测试 H5 - 温和治愈型情感测试",
+  "scripts": {
+    "dev": "npx http-server public -p 3000 -c-1",
+    "generate-codes": "node scripts/generate-codes.js",
+    "deploy": "vercel --prod"
+  },
+  "keywords": [
+    "恋爱脑",
+    "情感测试",
+    "H5"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  }
+}

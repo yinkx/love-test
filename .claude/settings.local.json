@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "WebFetch(domain:www.xiaohongshu.com)",
+      "Bash(cd \"E:/claudecode_project/xinlics_project/02_恋爱脑测试\" && npm install 2>&1)",
+      "Bash(node scripts/generate-codes.js --count 100)",
+      "Bash(npm run:*)",
+      "Bash(find /e/claudecode_project/xinlics_project/02_恋爱脑测试 -type f -name \"*.js\" -o -name \"*.html\" -o -name \"*.css\" -o -name \"*.json\" -o -name \"*.md\" 2>/dev/null | sort)",
+      "Bash(Stop-Process -Id 38436 -Force; Stop-Process -Id 31116 -Force)",
+      "Bash(taskkill /F /IM node.exe)",
+      "Bash(killall node:*)",
+      "Bash(cd \"E:/claudecode_project/xinlics_project/02_恋爱脑测试\" && npx http-server public -p 3001 -c-1)",
+      "Bash(sleep 3 && curl -s \"http://127.0.0.1:3001/test.html?code=W3D7LF\" | head -10)",
+      "Bash(curl:*)",
+      "Bash(netstat:*)",
+      "Bash(taskkill:*)",
+      "Bash(cmd //c \"taskkill /PID 27940 /F\")",
+      "Bash(powershell -Command \"Invoke-RestMethod -Uri 'http://localhost:3000/api/verify?code=KZ9WC6' -Method Get\")",
+      "Bash(cd:*)"
+    ]
+  }
+}

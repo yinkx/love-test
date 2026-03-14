@@ -1,0 +1,26 @@
+{
+  "version": 2,
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/$1"
+    },
+    {
+      "src": "/test/(.*)",
+      "dest": "/test.html"
+    },
+    {
+      "src": "/result/(.*)",
+      "dest": "/result.html"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/public/$1"
+    }
+  ],
+  "functions": {
+    "api/**/*.js": {
+      "runtime": "@vercel/node"
+    }
+  }
+}

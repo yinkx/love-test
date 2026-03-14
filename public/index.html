@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>恋爱脑测试 - 探索你在爱里的样子</title>
+  <meta name="description" content="温和治愈型情感测试，帮你了解自己在恋爱中的状态">
+  <link rel="stylesheet" href="src/styles/main.css">
+  <style>
+    .input-section {
+      margin-top: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      align-items: center;
+    }
+    .code-input-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+    .code-input {
+      width: 100%;
+      max-width: 200px;
+      padding: 12px 20px;
+      border: 2px solid var(--morandi-pink-light);
+      border-radius: 50px;
+      font-size: 1rem;
+      text-align: center;
+      outline: none;
+      transition: var(--transition);
+      text-transform: uppercase;
+    }
+    .code-input:focus {
+      border-color: var(--morandi-pink);
+      box-shadow: 0 0 0 3px rgba(212, 165, 165, 0.2);
+    }
+    .code-input::placeholder {
+      color: var(--text-light);
+      text-transform: none;
+    }
+    .input-note {
+      font-size: 0.875rem;
+      color: var(--text-light);
+    }
+  </style>
+</head>
+<body>
+  <div class="landing-container">
+    <div class="landing-content">
+      <h1 class="landing-title">恋爱脑测试</h1>
+      <p class="landing-subtitle">探索你在爱里的样子</p>
+
+      <div class="landing-card">
+        <div class="feature-item">
+          <span class="feature-icon">🌸</span>
+          <span class="feature-text">20 道精选题目</span>
+        </div>
+        <div class="feature-item">
+          <span class="feature-icon">📊</span>
+          <span class="feature-text">四维度深度分析</span>
+        </div>
+        <div class="feature-item">
+          <span class="feature-icon">💝</span>
+          <span class="feature-text">温和治愈报告</span>
+        </div>
+      </div>
+
+      <div class="input-section">
+        <div class="code-input-wrapper">
+          <input
+            type="text"
+            id="code-input"
+            class="code-input"
+            placeholder="请输入验证码"
+            maxlength="6"
+            onkeypress="if(event.key==='Enter') goToTest()"
+          >
+          <p class="input-note">请输入官方渠道获取的测试验证码</p>
+        </div>
+
+        <a href="#" class="start-btn" id="start-btn" onclick="goToTest()">开始测试</a>
+      </div>
+
+      <p class="landing-note">测试约需 3-5 分钟 · 结果可保存分享</p>
+    </div>
+  </div>
+
+  <script>
+    function goToTest() {
+      const codeInput = document.getElementById('code-input');
+      const code = codeInput.value.trim().toUpperCase();
+
+      if (!code) {
+        codeInput.placeholder = '请先输入验证码～';
+        codeInput.style.borderColor = '#FF8A8A';
+        setTimeout(() => {
+          codeInput.style.borderColor = 'var(--morandi-pink-light)';
+        }, 2000);
+        return;
+      }
+
+      window.location.href = `./test.html?code=${encodeURIComponent(code)}`;
+    }
+
+    // 页面加载时检查 URL 参数
+    window.addEventListener('DOMContentLoaded', () => {
+      const params = new URLSearchParams(window.location.search);
+      const codeFromUrl = params.get('code');
+
+      if (codeFromUrl) {
+        // 已有验证码，直接跳转测试
+        window.location.href = `./test.html?code=${codeFromUrl}`;
+        return;
+      }
+    });
+  </script>
+</body>
+</html>

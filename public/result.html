@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>测试报告 - 恋爱脑测试</title>
+  <link rel="stylesheet" href="src/styles/main.css">
+</head>
+<body>
+  <div class="result-container">
+    <header class="result-header">
+      <h1 class="result-title">你的恋爱脑测试报告</h1>
+      <p class="result-subtitle">探索你在爱里的样子</p>
+    </header>
+
+    <main class="result-main">
+      <!-- 等级展示 -->
+      <section class="level-section">
+        <div class="level-badge" id="level-badge">
+          <span class="level-icon" id="level-icon">🌸</span>
+          <span class="level-name" id="level-name">--</span>
+        </div>
+        <div class="score-display">
+          <span class="score-number" id="score-number">0</span>
+          <span class="score-label">/ 100</span>
+        </div>
+      </section>
+
+      <!-- 雷达图 -->
+      <section class="radar-section">
+        <canvas id="radar-canvas" width="300" height="300"></canvas>
+      </section>
+
+      <!-- 维度解读 -->
+      <section class="dimensions-section" id="dimensions-section">
+        <h2 class="section-title">维度分析</h2>
+        <div class="dimension-list" id="dimension-list"></div>
+      </section>
+
+      <!-- 典型特征 -->
+      <section class="features-section">
+        <h2 class="section-title">你的特点</h2>
+        <ul class="features-list" id="features-list"></ul>
+      </section>
+
+      <!-- 成长建议 -->
+      <section class="suggestions-section">
+        <h2 class="section-title">成长建议</h2>
+        <div class="suggestions-list" id="suggestions-list"></div>
+      </section>
+
+      <!-- 温馨提示 -->
+      <section class="note-section">
+        <p class="note-text">
+          💕 测试只是参考，最重要的是保持对自己的觉察。<br>
+          在爱里认真的你，很勇敢，也很珍贵。
+        </p>
+      </section>
+
+      <!-- 操作按钮 -->
+      <section class="action-section">
+        <button class="share-btn" id="share-btn">生成分享卡片</button>
+        <a href="./index.html" class="home-btn">返回首页</a>
+      </section>
+    </main>
+
+    <!-- 分享卡片弹窗 -->
+    <div id="share-modal" class="modal" style="display: none;">
+      <div class="modal-content">
+        <button class="modal-close" id="modal-close">×</button>
+        <div class="share-card" id="share-card">
+          <div class="share-header">
+            <span class="share-title">🌸 恋爱脑测试 🌸</span>
+          </div>
+          <div class="share-body">
+            <div class="share-level" id="share-level">--</div>
+            <div class="share-score" id="share-score">0 分</div>
+            <div class="share-desc" id="share-desc"></div>
+          </div>
+          <div class="share-footer">
+            <span class="share-url">扫码测试你的恋爱脑指数</span>
+          </div>
+        </div>
+        <button class="download-btn" id="download-btn">保存图片</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="src/scripts/result.js"></script>
+</body>
+</html>
