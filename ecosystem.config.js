@@ -31,9 +31,9 @@ module.exports = {
       host: '47.95.70.70',
       ref: 'origin/main',
       repo: 'https://github.com/yinkx/love-test.git',
-      path: '/data/test/love-test',
+      path: '/data/test',
       'pre-deploy-local': '',
-      'post-deploy': 'npm install && pm2 reload ecosystem.config.js --env production',
+      'post-deploy': 'cd love-test && npm install && pm2 reload ecosystem.config.js --env production',
       'pre-setup': 'npm install -g pm2',
       env: {
         NODE_ENV: 'production'
