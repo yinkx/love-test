@@ -7,7 +7,7 @@ const fs = require('fs');
 const path = require('path');
 const url = require('url');
 
-const PORT = 3000;
+const PORT = 8000;
 
 // ==================== 限流配置 ====================
 const RATE_LIMIT = {

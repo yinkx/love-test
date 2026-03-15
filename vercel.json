@@ -2,6 +2,10 @@
   "version": 2,
   "routes": [
     {
+      "src": "/love-test/api/(.*)",
+      "dest": "/api/$1"
+    },
+    {
       "src": "/api/(.*)",
       "dest": "/api/$1"
     },
