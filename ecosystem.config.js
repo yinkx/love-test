@@ -28,7 +28,7 @@ module.exports = {
   deploy: {
     production: {
       user: 'root',
-      host: '你的服务器 IP',  // 修改为你的服务器 IP
+      host: '47.95.70.70',
       ref: 'origin/main',
       repo: 'https://github.com/yinkx/love-test.git',
       path: '/data/test/love-test',
