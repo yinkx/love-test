@@ -78,7 +78,7 @@ const MIME_TYPES = {
 
 // 路由配置（与 vercel.json 保持一致）
 const routes = [
-  { src: /^\/api\//, dest: '/api$&' },
+  { src: /^\/(love-test\/)?api\//, dest: '/api$&' },
   { src: /^\/test\/(.*)/, dest: '/test.html' },
   { src: /^\/result\/(.*)/, dest: '/result.html' }
 ];
@@ -250,9 +250,10 @@ const server = http.createServer(async (req, res) => {
 
   console.log(`[ ${new Date().toLocaleTimeString()} ] ${req.method} ${pathname}`);
 
-  // 处理 API 路由
-  if (pathname.startsWith('/api/')) {
-    if (pathname === '/api/verify' || pathname === '/api/verify/') {
+  // 处理 API 路由（支持 /api/ 和 /love-test/api/）
+  if (pathname.startsWith('/api/') || pathname.startsWith('/love-test/api/')) {
+    if (pathname === '/api/verify' || pathname === '/api/verify/' ||
+        pathname === '/love-test/api/verify' || pathname === '/love-test/api/verify/') {
       await handleVerify(req, res, query);
       return;
     }

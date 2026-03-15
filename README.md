@@ -4,6 +4,17 @@
 
 ---
 
+## 部署配置
+
+| 配置项 | 值 |
+|--------|-----|
+| **项目根目录** | `/data/test` |
+| **项目名称** | `love-test` |
+| **访问地址格式** | `域名/love-test/?code=验证码` |
+| **示例访问地址** | `https://example.com/love-test/?code=ABC123` |
+
+---
+
 ## 项目结构
 
 ```
@@ -84,7 +95,7 @@ vercel --prod
 ## 使用流程
 
 1. **用户在小红书付费购买** → 你发送带验证码的链接
-2. **用户打开链接** → `https://your-domain.com/test.html?code=ABC123`
+2. **用户打开链接** → `https://your-domain.com/love-test/?code=ABC123`
 3. **验证码校验** → 自动验证有效性
 4. **完成 20 道测试** → 3-5 分钟
 5. **查看完整报告** → 包含分数、等级、维度分析、建议
@@ -94,7 +105,7 @@ vercel --prod
 
 ## API 说明
 
-### GET /api/verify?code=XXX
+### GET /love-test/api/verify?code=XXX
 
 校验验证码是否有效
 
@@ -104,7 +115,7 @@ vercel --prod
 { "valid": false, "message": "验证码已被使用" }
 ```
 
-### POST /api/verify
+### POST /love-test/api/verify
 
 标记验证码为已使用
 
