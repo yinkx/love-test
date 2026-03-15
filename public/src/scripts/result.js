@@ -485,7 +485,7 @@ downloadBtn.addEventListener('click', async () => {
   // 绘制底部文字
   ctx.fillStyle = '#8B8B8B';
   ctx.font = '14px system-ui';
-  ctx.fillText('扫码测试你的恋爱脑指数', width / 2, height - 40);
+  ctx.fillText('探索你在爱里的样子', width / 2, height - 40);
 
   // 下载图片
   try {
