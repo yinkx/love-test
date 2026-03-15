@@ -6,7 +6,7 @@ import { questions } from './questions.js';
 // API 基础 URL（根据环境自动适配）
 const API_BASE = window.location.hostname === 'localhost'
   ? 'http://localhost:8000/love-test/api'
-  : 'http://47.95.70.70:8000/api';
+  : '/love-test/api';
 
 // 本地开发模式（无后端时自动跳过验证）
 const IS_LOCAL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
