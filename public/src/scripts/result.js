@@ -442,8 +442,7 @@ shareModal.addEventListener('keydown', (e) => {
 downloadBtn.addEventListener('click', async () => {
   const shareCard = document.getElementById('share-card');
 
-  // 使用 html2canvas 或简单截图方案
-  // 这里使用 Canvas 手绘方式生成图片
+  // 使用 Canvas 手绘方式生成图片
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
   const width = 375;
@@ -487,18 +486,92 @@ downloadBtn.addEventListener('click', async () => {
   ctx.font = '14px system-ui';
   ctx.fillText('探索你在爱里的样子', width / 2, height - 40);
 
-  // 下载图片
+  // 保存图片 - 兼容微信和浏览器
   try {
-    const dataUrl = canvas.toDataURL('image/png');
-    const link = document.createElement('a');
-    link.download = `恋爱脑测试-${level.name}.png`;
-    link.href = dataUrl;
-    link.click();
+    canvas.toBlob(async (blob) => {
+      if (!blob) {
+        alert('生成失败，请重试～');
+        return;
+      }
+
+      // 检测是否在微信中
+      const isWeixin = /micromessenger/i.test(navigator.userAgent);
+
+      if (isWeixin) {
+        // 微信环境：显示图片让用户长按保存
+        const imgUrl = URL.createObjectURL(blob);
+        showImagePreview(imgUrl, level.name);
+      } else {
+        // 浏览器环境：直接下载
+        const link = document.createElement('a');
+        link.download = `恋爱脑测试-${level.name}.png`;
+        link.href = URL.createObjectURL(blob);
+        link.click();
+        URL.revokeObjectURL(link.href);
+      }
+    }, 'image/png');
   } catch (error) {
     console.error('生成失败:', error);
     alert('生成失败，请使用手机截图保存～');
   }
 });
+
+// 在微信中显示图片预览（支持长按保存）
+function showImagePreview(imgUrl, levelName) {
+  // 创建一个临时页面显示图片
+  const overlay = document.createElement('div');
+  overlay.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.9);
+    z-index: 99999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  `;
+
+  const img = document.createElement('img');
+  img.src = imgUrl;
+  img.style.cssText = `
+    max-width: 90%;
+    max-height: 80%;
+    object-fit: contain;
+  `;
+
+  const tip = document.createElement('p');
+  tip.textContent = '长按图片可以保存到相册';
+  tip.style.cssText = `
+    color: #fff;
+    margin-top: 20px;
+    font-size: 14px;
+  `;
+
+  const closeBtn = document.createElement('button');
+  closeBtn.textContent = '关闭';
+  closeBtn.style.cssText = `
+    margin-top: 15px;
+    padding: 8px 30px;
+    background: #D4A5A5;
+    color: #fff;
+    border: none;
+    border-radius: 20px;
+    font-size: 14px;
+    cursor: pointer;
+  `;
+  closeBtn.onclick = () => overlay.remove();
+
+  overlay.appendChild(img);
+  overlay.appendChild(tip);
+  overlay.appendChild(closeBtn);
+  document.body.appendChild(overlay);
+
+  // 点击图片也可以关闭
+  img.onclick = () => overlay.remove();
+}
 
 // 辅助函数：文本换行
 function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
