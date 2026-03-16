@@ -46,5 +46,18 @@
   </div>
 
   <script type="module" src="src/scripts/test.js"></script>
+  <script>
+    // 调试信息
+    function showDebugInfo() {
+      const debug = document.createElement('div');
+      debug.style.cssText = 'position:fixed;bottom:0;left:0;right:0;background:#000;color:#0f0;font:12px monospace;padding:10px;z-index:99999;';
+      debug.innerHTML = 'UA: ' + navigator.userAgent.substring(0, 50) + '...<br>' +
+        'innerHeight: ' + window.innerHeight + '<br>' +
+        'outerHeight: ' + window.outerHeight + '<br>' +
+        'visualViewport.h: ' + (window.visualViewport ? window.visualViewport.height : 'N/A');
+      document.body.appendChild(debug);
+    }
+    window.addEventListener('load', showDebugInfo);
+  </script>
 </body>
 </html>
