@@ -11,7 +11,7 @@ const PORT = 8000;
 
 // ==================== 项目配置 ====================
 // 从环境变量读取项目名称，用于 API 路径前缀
-const PROJECT_SHORT_NAME = process.env.PROJECT_SHORT_NAME || 'love';
+const PROJECT_SHORT_NAME = process.env.PROJECT_SHORT_NAME || 'love-test';
 const API_PREFIX = `/${PROJECT_SHORT_NAME}/api`;
 
 console.log(`[配置] 项目前缀：${API_PREFIX}`);
