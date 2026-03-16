@@ -63,11 +63,16 @@
   outline: none;
 }
 
+html, body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   background: linear-gradient(135deg, var(--cream) 0%, var(--warm-yellow) 100%);
-  min-height: 100vh;
-  min-height: 100%;
   color: var(--text-dark);
   line-height: 1.6;
   overflow: hidden; /* 防止滚动 */
@@ -76,30 +81,24 @@ body {
 /* ==================== 固定布局容器 ==================== */
 /* 落地页容器 */
 .landing-page {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  width: 100%;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 20px;
-  overflow: hidden;
+  box-sizing: border-box;
 }
 
 /* 测试页容器 */
 .test-page {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  width: 100%;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 20px;
-  overflow: hidden;
+  box-sizing: border-box;
 }
 
 .landing-content {
@@ -407,20 +406,20 @@ body {
 
 /* ==================== 结果页 ==================== */
 .result-page {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  width: 100%;
+  min-height: 100%;
+  display: flex;
+  justify-content: center;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }
 
 .result-container {
   max-width: 480px;
+  width: 100%;
   margin: 0 auto;
   padding: 20px;
-  min-height: 100%;
+  box-sizing: border-box;
 }
 
 .result-header {
