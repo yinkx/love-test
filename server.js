@@ -178,16 +178,7 @@ async function handleVerify(req, res, query) {
         return;
       }
 
-      // 检查是否过期（24 小时）
-      const createdAt = new Date(codeData.createdAt).getTime();
-      const now = Date.now();
-      const hoursPassed = (now - createdAt) / (1000 * 60 * 60);
-
-      if (hoursPassed > 24) {
-        sendJSON(res, 200, { valid: false, message: '验证码已过期' });
-        return;
-      }
-
+      // 验证通过（验证码不过期，只要未被使用就有效）
       sendJSON(res, 200, { valid: true, message: '验证通过' });
     } catch (error) {
       console.error('[验证错误]', error.message);
