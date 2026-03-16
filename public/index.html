@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>恋爱脑测试 - 探索你在爱里的样子</title>
   <meta name="description" content="温和治愈型情感测试，帮你了解自己在恋爱中的状态">
   <meta name="keywords" content="恋爱脑测试，情感测试，心理测试，恋爱测试">
@@ -30,7 +30,7 @@
 <body>
   <div class="error-toast" id="error-toast" role="alert" aria-live="polite"></div>
 
-  <div class="landing-page" id="landing-page">
+  <div class="landing-page">
     <div class="landing-content">
       <h1 class="landing-title">恋爱脑测试</h1>
       <p class="landing-subtitle">探索你在爱里的样子</p>
@@ -119,28 +119,6 @@
       // 自动聚焦输入框
       document.getElementById('code-input').focus();
     });
-
-    // 微信浏览器居中修复
-    function fixWeChatHeight() {
-      const page = document.getElementById('landing-page');
-      if (!page) return;
-
-      // 检测是否微信
-      const isWeChat = /micromessenger/i.test(navigator.userAgent);
-      if (!isWeChat) return;
-
-      // 使用 visualViewport 或 innerHeight
-      const height = window.visualViewport ?
-        window.visualViewport.height :
-        window.innerHeight;
-
-      page.style.height = height + 'px';
-    }
-
-    // 微信浏览器中动态调整高度
-    window.addEventListener('load', fixWeChatHeight);
-    window.addEventListener('resize', fixWeChatHeight);
-    window.addEventListener('scroll', fixWeChatHeight);
   </script>
 </body>
 </html>
