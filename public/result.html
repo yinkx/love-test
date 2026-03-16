@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>测试报告 - 恋爱脑测试</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌸</text></svg>">
   <link rel="stylesheet" href="src/styles/main.css">
@@ -90,5 +90,28 @@
   </div>
 
   <script type="module" src="src/scripts/result.js"></script>
+  <script>
+    // 微信浏览器居中修复
+    function fixWeChatHeight() {
+      const page = document.querySelector('.result-page');
+      if (!page) return;
+
+      // 检测是否微信
+      const isWeChat = /micromessenger/i.test(navigator.userAgent);
+      if (!isWeChat) return;
+
+      // 使用 visualViewport 或 innerHeight
+      const height = window.visualViewport ?
+        window.visualViewport.height :
+        window.innerHeight;
+
+      page.style.minHeight = height + 'px';
+    }
+
+    // 微信浏览器中动态调整高度
+    window.addEventListener('load', fixWeChatHeight);
+    window.addEventListener('resize', fixWeChatHeight);
+    window.addEventListener('scroll', fixWeChatHeight);
+  </script>
 </body>
 </html>
