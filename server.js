@@ -9,6 +9,13 @@ const url = require('url');
 
 const PORT = 8000;
 
+// ==================== 项目配置 ====================
+// 从环境变量读取项目名称，用于 API 路径前缀
+const PROJECT_SHORT_NAME = process.env.PROJECT_SHORT_NAME || 'love';
+const API_PREFIX = `/${PROJECT_SHORT_NAME}/api`;
+
+console.log(`[配置] 项目前缀：${API_PREFIX}`);
+
 // ==================== 限流配置 ====================
 const RATE_LIMIT = {
   windowMs: 60 * 1000,      // 1 分钟窗口
@@ -76,9 +83,12 @@ const MIME_TYPES = {
   '.ico': 'image/x-icon'
 };
 
-// 路由配置（与 vercel.json 保持一致）
+// 路由配置（支持子路径访问）
 const routes = [
-  { src: /^\/(love-test\/)?api\//, dest: '/api$&' },
+  { src: new RegExp(`^\\/${PROJECT_SHORT_NAME}\\/api\\/`), dest: '/api$&' },
+  { src: new RegExp(`^\\/${PROJECT_SHORT_NAME}\\/test\\/(.*)`), dest: '/test.html' },
+  { src: new RegExp(`^\\/${PROJECT_SHORT_NAME}\\/result\\/(.*)`), dest: '/result.html' },
+  { src: new RegExp(`^\\/${PROJECT_SHORT_NAME}\\/?$`), dest: '/index.html' },
   { src: /^\/test\/(.*)/, dest: '/test.html' },
   { src: /^\/result\/(.*)/, dest: '/result.html' }
 ];
@@ -250,10 +260,10 @@ const server = http.createServer(async (req, res) => {
 
   console.log(`[ ${new Date().toLocaleTimeString()} ] ${req.method} ${pathname}`);
 
-  // 处理 API 路由（支持 /api/ 和 /love-test/api/）
-  if (pathname.startsWith('/api/') || pathname.startsWith('/love-test/api/')) {
+  // 处理 API 路由（支持 /api/ 和 /{PROJECT_SHORT_NAME}/api/）
+  if (pathname.startsWith('/api/') || pathname.startsWith(`${API_PREFIX}/`)) {
     if (pathname === '/api/verify' || pathname === '/api/verify/' ||
-        pathname === '/love-test/api/verify' || pathname === '/love-test/api/verify/') {
+        pathname === `${API_PREFIX}/verify` || pathname === `${API_PREFIX}/verify/`) {
       await handleVerify(req, res, query);
       return;
     }

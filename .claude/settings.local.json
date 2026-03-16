@@ -17,7 +17,10 @@
       "Bash(taskkill:*)",
       "Bash(cmd //c \"taskkill /PID 27940 /F\")",
       "Bash(powershell -Command \"Invoke-RestMethod -Uri 'http://localhost:3000/api/verify?code=KZ9WC6' -Method Get\")",
-      "Bash(cd:*)"
+      "Bash(cd:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(git add:*)"
     ]
   }
 }

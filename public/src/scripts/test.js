@@ -4,9 +4,11 @@
 import { questions } from './questions.js';
 
 // API 基础 URL（根据环境自动适配）
+// 使用相对路径，支持子目录部署（如 /love/api）
+const PROJECT_SHORT_NAME = window.location.pathname.split('/')[1] || 'love';
 const API_BASE = window.location.hostname === 'localhost'
-  ? 'http://localhost:8000/love-test/api'
-  : '/love-test/api';
+  ? 'http://localhost:8000/' + PROJECT_SHORT_NAME + '/api'
+  : '/' + PROJECT_SHORT_NAME + '/api';
 
 // 本地开发模式（无后端时自动跳过验证）
 const IS_LOCAL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';

@@ -17,8 +17,15 @@ NC='\033[0m' # No Color
 # 配置项
 APP_NAME="love-test-api"
 APP_DIR="/data/test/love-test"
+PROJECT_SHORT_NAME="love-test"     # 项目访问前缀，如 love-test -> xiaotuzi.fun/love-test/
 NODE_VERSION="18"
 PORT=8000
+
+# 域名配置
+DOMAIN_NAME="xiaotuzi.fun"
+SUB_DOMAIN=""                 # 子域名前缀，留空则使用根域名
+                           # 示例：love -> love.xiaotuzi.fun
+SERVER_IP="47.95.70.70"      # 服务器公网 IP
 
 ###############################################################################
 # 打印函数
@@ -132,9 +139,10 @@ setup_environment() {
         print_success "Node.js 安装完成"
     fi
 
-    # 检查并安装 Nginx
+    # 检查并安装 Nginx（不依赖宝塔）
     if command -v nginx &> /dev/null; then
-        print_success "Nginx 已安装"
+        NGINX_VER=$(nginx -v 2>&1)
+        print_success "Nginx 已安装：$NGINX_VER"
     else
         print_info "安装 Nginx..."
         if [ "$PKG_MANAGER" = "apt-get" ]; then
@@ -251,28 +259,34 @@ deploy_code() {
 setup_nginx() {
     print_header "配置 Nginx"
 
-    NGINX_CONF="/etc/nginx/conf.d/love-test.conf"
-
-    # 检测是否有域名
-    echo ""
-    print_info "请配置访问地址:"
-    read -p "  是否有域名？(y/n): " HAS_DOMAIN
-
-    if [ "$HAS_DOMAIN" = "y" ] || [ "$HAS_DOMAIN" = "Y" ]; then
-        read -p "  请输入域名 (例如：example.com): " DOMAIN_NAME
-        SERVER_NAME="$DOMAIN_NAME www.$DOMAIN_NAME"
+    # 构建完整域名
+    if [ -n "$SUB_DOMAIN" ]; then
+        FULL_DOMAIN="$SUB_DOMAIN.$DOMAIN_NAME"
+        SERVER_NAME="$FULL_DOMAIN www.$FULL_DOMAIN"
     else
-        # 获取服务器 IP
-        SERVER_IP=$(curl -s ifconfig.me 2>/dev/null || hostname -I | awk '{print $1}')
-        SERVER_NAME="$SERVER_IP"
-        print_info "使用服务器 IP: $SERVER_IP"
+        FULL_DOMAIN="$DOMAIN_NAME"
+        SERVER_NAME="$DOMAIN_NAME www.$DOMAIN_NAME"
     fi
 
-    # 创建 Nginx 配置文件
+    # 项目访问路径（如 /love-test/）
+    PROJECT_PATH="/$PROJECT_SHORT_NAME"
+
+    # 项目 Nginx 配置目录
+    PROJECT_NGINX_DIR="/data/test/nginx"
+    NGINX_CONF="$PROJECT_NGINX_DIR/love-test.conf"
+
+    # 创建配置目录
+    mkdir -p "$PROJECT_NGINX_DIR"
+    print_info "项目 Nginx 配置目录：$PROJECT_NGINX_DIR"
+
+    print_info "配置域名：$SERVER_NAME"
+    print_info "项目访问路径：$PROJECT_PATH"
+
+    # 创建 Nginx 配置文件（支持子路径访问）
     cat > "$NGINX_CONF" << EOF
 server {
     listen 80;
-    server_name $SERVER_NAME;
+    server_name $SERVER_NAME $SERVER_IP;
 
     # 项目根目录
     set \$project_root $APP_DIR;
@@ -281,33 +295,16 @@ server {
     access_log /var/log/nginx/love-test-access.log;
     error_log /var/log/nginx/love-test-error.log;
 
-    # 首页
-    location / {
+    # 项目子路径访问（如 /love-test/）
+    location /$PROJECT_SHORT_NAME/ {
         alias \$project_root/public/;
         index index.html;
-        try_files \$uri \$uri/ /index.html;
+        try_files \$uri \$uri/ /$PROJECT_SHORT_NAME/index.html;
     }
 
-    # 测试页
-    location = /test {
-        alias \$project_root/public/test.html;
-    }
-
-    # 结果页
-    location = /result {
-        alias \$project_root/public/result.html;
-    }
-
-    # 静态资源
-    location /src/ {
-        alias \$project_root/public/src/;
-        expires 30d;
-        add_header Cache-Control "public, immutable";
-    }
-
-    # API 接口
-    location /api/ {
-        proxy_pass http://127.0.0.1:$PORT/api/;
+    # API 接口（支持 /{PROJECT_SHORT_NAME}/api/）
+    location /$PROJECT_SHORT_NAME/api/ {
+        proxy_pass http://127.0.0.1:$PORT/$PROJECT_SHORT_NAME/api/;
         proxy_set_header Host \$host;
         proxy_set_header X-Real-IP \$remote_addr;
         proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
@@ -322,15 +319,79 @@ server {
             return 204;
         }
     }
+
+    # 静态资源（支持 /{PROJECT_SHORT_NAME}/src/）
+    location /$PROJECT_SHORT_NAME/src/ {
+        alias \$project_root/public/src/;
+        expires 30d;
+        add_header Cache-Control "public, immutable";
+    }
 }
 EOF
 
-    print_success "Nginx 配置文件已创建"
+    print_success "Nginx 配置文件已创建：$NGINX_CONF"
 
-    # 验证配置
+    # 查找主 nginx.conf 并添加 include
+    print_info "配置主 Nginx 包含项目配置..."
+
+    # 查找 nginx.conf 路径
+    if [ -f /etc/nginx/nginx.conf ]; then
+        MAIN_NGINX_CONF="/etc/nginx/nginx.conf"
+    elif [ -f /www/server/nginx/conf/nginx.conf ]; then
+        MAIN_NGINX_CONF="/www/server/nginx/conf/nginx.conf"
+    elif [ -f /usr/local/nginx/conf/nginx.conf ]; then
+        MAIN_NGINX_CONF="/usr/local/nginx/conf/nginx.conf"
+    else
+        MAIN_NGINX_CONF=$(nginx -t 2>&1 | grep "configuration file" | awk '{print $5}')
+    fi
+
+    if [ -z "$MAIN_NGINX_CONF" ] || [ ! -f "$MAIN_NGINX_CONF" ]; then
+        print_error "未找到主 Nginx 配置文件"
+        exit 1
+    fi
+
+    print_info "主 Nginx 配置文件：$MAIN_NGINX_CONF"
+
+    # 检查是否已包含项目配置（检查 love-test.conf）
+    if grep -q "love-test.conf" "$MAIN_NGINX_CONF" 2>/dev/null; then
+        print_info "项目配置已包含在主配置中"
+    else
+        # 在 http 块结束前添加 include
+        print_info "添加 include 指令到主配置..."
+
+        # 备份
+        cp "$MAIN_NGINX_CONF" "${MAIN_NGINX_CONF}.bak"
+
+        # 使用 awk 在 http 块结束前添加 include
+        awk -v conf="$NGINX_CONF" '
+        /^http[[:space:]]*\{/ {
+            in_http = 1
+            print
+            next
+        }
+        in_http && /^[[:space:]]*\}[[:space:]]*$/ && !added {
+            print "    include " conf ";"
+            added = 1
+            in_http = 0
+        }
+        { print }
+        ' "$MAIN_NGINX_CONF" > "${MAIN_NGINX_CONF}.tmp" && mv "${MAIN_NGINX_CONF}.tmp" "$MAIN_NGINX_CONF"
+
+        print_success "已添加 include 到主配置"
+    fi
+
+    # 验证并重载配置
+    print_info "验证 Nginx 配置..."
+
+    # 禁用 default 站点（避免冲突）
+    if [ -L /etc/nginx/sites-enabled/default ]; then
+        print_info "禁用 default 站点..."
+        rm -f /etc/nginx/sites-enabled/default
+    fi
+
     if nginx -t > /dev/null 2>&1; then
         print_success "Nginx 配置验证通过"
-        nginx -s reload 2>/dev/null || systemctl reload nginx
+        systemctl reload nginx
         print_success "Nginx 已重载"
     else
         print_error "Nginx 配置验证失败"
@@ -378,8 +439,11 @@ start_app() {
 
     cd "$APP_DIR"
 
-    # 停止旧服务
+    # 停止旧服务（先停止再删除，避免端口占用）
     print_info "停止旧服务 (如果存在)..."
+    pm2 stop $APP_NAME 2>/dev/null || true
+
+    print_info "删除旧服务..."
     pm2 delete $APP_NAME 2>/dev/null || true
 
     # 启动新服务
@@ -451,8 +515,18 @@ verify_deployment() {
 show_deployment_info() {
     print_header "部署完成"
 
-    # 获取服务器 IP
-    SERVER_IP=$(curl -s ifconfig.me 2>/dev/null || hostname -I | awk '{print $1}')
+    # 构建完整域名
+    if [ -n "$SUB_DOMAIN" ]; then
+        FULL_DOMAIN="$SUB_DOMAIN.$DOMAIN_NAME"
+    else
+        FULL_DOMAIN="$DOMAIN_NAME"
+    fi
+
+    # 项目访问路径
+    PROJECT_PATH="/$PROJECT_SHORT_NAME"
+
+    # 使用预设的服务器 IP
+    PUBLIC_IP="$SERVER_IP"
 
     echo ""
     echo -e "${GREEN}========================================${NC}"
@@ -460,8 +534,9 @@ show_deployment_info() {
     echo -e "${GREEN}========================================${NC}"
     echo ""
     echo -e "${BLUE}访问地址:${NC}"
-    echo "  - 首页：http://$SERVER_IP/"
-    echo "  - 测试：http://$SERVER_IP/test?code=验证码"
+    echo "  - 域名：http://$FULL_DOMAIN$PROJECT_PATH/"
+    echo "  - 公网 IP：http://$PUBLIC_IP$PROJECT_PATH/"
+    echo "  - 测试：http://$FULL_DOMAIN$PROJECT_PATH/test.html?code=验证码"
     echo ""
     echo -e "${BLUE}管理命令:${NC}"
     echo "  - 查看状态：pm2 status"
@@ -486,8 +561,8 @@ show_deployment_info() {
 
     echo ""
     echo -e "${YELLOW}注意事项:${NC}"
-    echo "  1. 请在云服务商控制台配置安全组，开放端口 80/443/${PORT}"
-    echo "  2. 如有域名，请配置 DNS 解析到服务器 IP"
+    echo "  1. 请在阿里云控制台配置安全组，开放端口 80/443/${PORT}"
+    echo "  2. 如需使用域名访问，请配置 DNS 解析：$FULL_DOMAIN → $PUBLIC_IP"
     echo "  3. 建议使用 Certbot 配置 HTTPS 加密"
     echo ""
 }

@@ -8,17 +8,18 @@
 
 | 配置项 | 值 |
 |--------|-----|
-| **项目根目录** | `/data/test` |
+| **项目根目录** | `/data/test/love-test` |
 | **项目名称** | `love-test` |
 | **访问地址格式** | `域名/love-test/?code=验证码` |
-| **示例访问地址** | `https://example.com/love-test/?code=ABC123` |
+| **示例访问地址** | `https://xiaotuzi.fun/love-test/?code=ABC123` |
+| **API 端口** | `8000` |
 
 ---
 
 ## 项目结构
 
 ```
-02_恋爱脑测试/
+love-test/
 ├── public/                 # 静态页面
 │   ├── index.html         # 落地页
 │   ├── test.html          # 测试页
@@ -37,7 +38,10 @@
 │   └── codes/             # 验证码文件存储
 ├── scripts/
 │   └── generate-codes.js  # 验证码生成脚本
+├── server.js              # Node.js 后端服务
+├── ecosystem.config.js    # PM2 配置文件
 ├── package.json
+├── deploy.sh              # 一键部署脚本
 └── vercel.json            # Vercel 部署配置
 ```
 
@@ -71,22 +75,175 @@ npm run generate-codes -- --count 50
 
 ---
 
-## 部署到 Vercel
+## 部署方案
 
-### 1. 安装 Vercel CLI
+### 方案一：PM2 一键部署（推荐）
+
+适用于 Ubuntu/Debian/CentOS 服务器，支持标准 Nginx 环境。
+
+#### 前置要求
+
+- 服务器具有 root 权限
+- 已安装 Node.js 18+（脚本可自动安装）
+- 已安装 Nginx（脚本可自动安装）
+- 已安装 PM2（脚本可自动安装）
+
+#### 一键部署
+
+```bash
+# 1. 上传项目到服务器
+scp -r love-test root@your-server:/tmp/
+
+# 2. 登录服务器
+ssh root@your-server
+
+# 3. 移动到目标目录并授权
+mv /tmp/love-test /data/test/
+cd /data/test/love-test
+
+# 4. 运行部署脚本
+chmod +x deploy.sh
+./deploy.sh
+```
+
+#### 部署后配置
+
+脚本执行完成后，会显示访问地址和管理命令：
+
+```
+========================================
+  部署完成！
+========================================
+
+访问地址:
+  - 域名：http://xiaotuzi.fun/love-test/
+  - 公网 IP: http://47.95.70.70/love-test/
+  - 测试：http://xiaotuzi.fun/love-test/test.html?code=验证码
+
+管理命令:
+  - 查看状态：pm2 status
+  - 查看日志：pm2 logs love-test-api
+  - 重启服务：pm2 restart love-test-api
+  - 停止服务：pm2 stop love-test-api
+
+项目目录:
+  - /data/test/love-test
+
+验证码目录:
+  - /data/test/love-test/data/codes/
+```
+
+#### Nginx 配置说明
+
+部署脚本会自动完成以下配置：
+
+1. **创建项目配置文件**：`/data/test/nginx/love-test.conf`
+2. **Include 到主配置**：自动添加到 `/etc/nginx/nginx.conf`
+3. **禁用 default 站点**：避免 80 端口冲突
+
+手动配置 Nginx（可选）：
+
+```nginx
+server {
+    listen 80;
+    server_name xiaotuzi.fun www.xiaotuzi.fun 47.95.70.70;
+
+    set $project_root /data/test/love-test;
+
+    access_log /var/log/nginx/love-test-access.log;
+    error_log /var/log/nginx/love-test-error.log;
+
+    location /love-test/ {
+        alias $project_root/public/;
+        index index.html;
+        try_files $uri $uri/ /love-test/index.html;
+    }
+
+    location /love-test/api/ {
+        proxy_pass http://127.0.0.1:8000/love-test/api/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        add_header Access-Control-Allow-Origin *;
+        add_header Access-Control-Allow-Methods 'GET, POST, OPTIONS';
+        add_header Access-Control-Allow-Headers 'Content-Type';
+
+        if ($request_method = OPTIONS) {
+            return 204;
+        }
+    }
+
+    location /love-test/src/ {
+        alias $project_root/public/src/;
+        expires 30d;
+        add_header Cache-Control "public, immutable";
+    }
+}
+```
+
+#### 常用管理命令
+
+```bash
+# 查看服务状态
+pm2 status love-test-api
+
+# 查看实时日志
+pm2 logs love-test-api
+
+# 重启服务
+pm2 restart love-test-api
+
+# 停止服务
+pm2 stop love-test-api
+
+# 删除服务
+pm2 delete love-test-api
+
+# 查看服务详情
+pm2 show love-test-api
+
+# 保存当前服务列表（开机自启）
+pm2 save
+```
+
+#### 验证部署
+
+```bash
+# 测试首页
+curl http://127.0.0.1/love-test/index.html
+
+# 测试 API
+curl http://127.0.0.1/love-test/api/verify?code=TEST01
+
+# 测试静态资源
+curl http://127.0.0.1/love-test/src/styles/main.css
+
+# 查看访问日志
+tail -f /var/log/nginx/love-test-access.log
+```
+
+---
+
+### 方案二：Vercel 部署
+
+适用于无服务器快速部署。
+
+#### 1. 安装 Vercel CLI
 
 ```bash
 npm install -g vercel
 ```
 
-### 2. 登录并部署
+#### 2. 登录并部署
 
 ```bash
 vercel login
 vercel --prod
 ```
 
-### 3. 配置域名
+#### 3. 配置域名
 
 在 Vercel 控制台绑定自定义域名。
 
@@ -187,9 +344,10 @@ cat data/codes/ABC123.json
 ## 技术栈
 
 - **前端**：HTML + CSS + JavaScript (ES Modules)
-- **后端**：Node.js Serverless (Vercel)
+- **后端**：Node.js + Express
+- **进程管理**：PM2
+- **反向代理**：Nginx
 - **存储**：JSON 文件（验证码数据）
-- **部署**：Vercel
 
 ---
 
@@ -199,9 +357,39 @@ cat data/codes/ABC123.json
 2. **一次性使用**：验证通过后标记为已使用
 3. **CORS 配置**：API 已配置允许跨域访问
 4. **移动端适配**：已优化 375px-428px 屏幕尺寸
+5. **安全组配置**：确保服务器开放端口 80/443/8000
+
+---
+
+## 故障排查
+
+### 404 Not Found
+
+检查 Nginx 配置，确保删除了 default 站点：
+```bash
+rm /etc/nginx/sites-enabled/default
+systemctl reload nginx
+```
+
+### 服务无法访问
+
+检查 PM2 服务状态：
+```bash
+pm2 status
+pm2 logs love-test-api
+```
+
+### 端口占用
+
+检查 8000 端口占用：
+```bash
+lsof -i:8000
+netstat -tlnp | grep 8000
+```
 
 ---
 
 ## 开发日志
 
+- 2026-03-16: 添加 PM2 一键部署脚本，支持标准 Nginx 环境
 - 2026-03-14: 项目初始化，完成核心功能开发
