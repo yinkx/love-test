@@ -34,23 +34,13 @@ module.exports = async (req, res) => {
       // 读取验证码信息
       const codeData = JSON.parse(fs.readFileSync(codePath, 'utf8'));
 
-      // 检查是否已使用
+      // 检查是否已使用（只有已使用的验证码才无效）
       if (codeData.status === 1) {
         res.status(200).json({ valid: false, message: '验证码已被使用' });
         return;
       }
 
-      // 检查是否过期（24 小时）
-      const createdAt = new Date(codeData.createdAt).getTime();
-      const now = Date.now();
-      const hoursPassed = (now - createdAt) / (1000 * 60 * 60);
-
-      if (hoursPassed > 24) {
-        res.status(200).json({ valid: false, message: '验证码已过期' });
-        return;
-      }
-
-      // 验证通过
+      // 验证通过（验证码不过期，只要未被使用就有效）
       res.status(200).json({ valid: true, message: '验证通过' });
     } catch (error) {
       console.error('验证错误:', error);
