@@ -154,11 +154,13 @@ body {
 
 /* ==================== 落地页 ==================== */
 .landing-container {
-  min-height: 100vh;
+  min-height: 100dvh; /* 使用动态视口高度，解决手机端地址栏问题 */
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 20px;
+  position: relative;
+  z-index: 1;
 }
 
 .landing-content {
@@ -236,7 +238,7 @@ body {
 
 /* ==================== 测试页 ==================== */
 .test-container {
-  min-height: 100vh;
+  min-height: 100dvh; /* 使用动态视口高度，解决手机端地址栏问题 */
   display: flex;
   align-items: center;
   justify-content: center;
