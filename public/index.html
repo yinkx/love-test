@@ -28,28 +28,9 @@
   <link rel="stylesheet" href="src/styles/main.css">
 </head>
 <body>
-  <!-- 浪漫背景 -->
-  <div class="bg-petals" aria-hidden="true">
-    <div class="petal"></div>
-    <div class="petal"></div>
-    <div class="petal"></div>
-    <div class="petal"></div>
-    <div class="petal"></div>
-    <div class="petal"></div>
-    <div class="petal"></div>
-    <div class="petal"></div>
-    <div class="petal"></div>
-    <div class="petal"></div>
-  </div>
-  <div class="heart-decor" aria-hidden="true">💕</div>
-  <div class="heart-decor" aria-hidden="true">💗</div>
-  <div class="heart-decor" aria-hidden="true">💖</div>
-  <div class="heart-decor" aria-hidden="true">💓</div>
-  <div class="heart-decor" aria-hidden="true">💕</div>
-
   <div class="error-toast" id="error-toast" role="alert" aria-live="polite"></div>
 
-  <div class="landing-container" id="landing-container">
+  <div class="landing-page">
     <div class="landing-content">
       <h1 class="landing-title">恋爱脑测试</h1>
       <p class="landing-subtitle">探索你在爱里的样子</p>
@@ -138,20 +119,6 @@
       // 自动聚焦输入框
       document.getElementById('code-input').focus();
     });
-
-    // 修复微信浏览器居中问题：动态设置容器高度
-    function setContainerHeight() {
-      const container = document.getElementById('landing-container');
-      // 使用 visualViewport API 获取实际可视高度（排除地址栏）
-      const visualHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
-      container.style.minHeight = visualHeight + 'px';
-    }
-
-    // 页面加载和窗口大小变化时调整
-    window.addEventListener('load', setContainerHeight);
-    window.addEventListener('resize', setContainerHeight);
-    // 微信浏览器滚动时也可能触发
-    window.addEventListener('scroll', setContainerHeight);
   </script>
 </body>
 </html>
