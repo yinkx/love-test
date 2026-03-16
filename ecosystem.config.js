@@ -1,16 +1,16 @@
 /**
  * PM2 部署配置文件
  *
- * 使用方法：
- * 1. 本地修改代码后提交并 push 到 GitHub
- * 2. 在服务器上执行：pm2 deploy ecosystem.config.js production update
- * 3. 或者首次部署：pm2 deploy ecosystem.config.js production setup
+ * 使用方法:
+ * 1. pm2 start ecosystem.config.js --env production
+ * 2. pm2 save
  */
 
 module.exports = {
   apps: [{
     name: 'love-test-api',
     script: 'server.js',
+    cwd: '/data/test/love-test',
     instances: 1,
     autorestart: true,
     watch: false,
@@ -23,21 +23,5 @@ module.exports = {
     out_file: './logs/out.log',
     log_date_format: 'YYYY-MM-DD HH:mm:ss',
     merge_logs: true
-  }],
-
-  deploy: {
-    production: {
-      user: 'root',
-      host: '47.95.70.70',
-      ref: 'origin/main',
-      repo: 'https://github.com/yinkx/love-test.git',
-      path: '/data/test',
-      'pre-deploy-local': '',
-      'post-deploy': 'cd love-test && npm install && pm2 reload ecosystem.config.js --env production',
-      'pre-setup': 'npm install -g pm2',
-      env: {
-        NODE_ENV: 'production'
-      }
-    }
-  }
+  }]
 };
