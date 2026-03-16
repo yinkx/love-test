@@ -63,46 +63,40 @@
   outline: none;
 }
 
-html, body {
+html {
+  width: 100%;
+  height: 100%;
+}
+
+body {
   width: 100%;
   height: 100%;
   margin: 0;
   padding: 0;
-  overflow: hidden;
-}
-
-body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   background: linear-gradient(135deg, var(--cream) 0%, var(--warm-yellow) 100%);
   color: var(--text-dark);
   line-height: 1.6;
+  position: relative;
 }
 
-/* ==================== 固定布局容器 ==================== */
-/* 落地页容器 - 使用绝对定位确保居中 */
-.landing-page {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 100%;
-  max-width: 500px;
-  padding: 20px;
-  box-sizing: border-box;
-}
-
-/* 测试页容器 - 使用绝对定位确保居中 */
+/* 微信浏览器修复：确保外层容器占满屏幕 */
+.landing-page,
 .test-page {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
   width: 100%;
-  max-width: 500px;
-  padding: 20px;
-  box-sizing: border-box;
+  height: 100%;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-box-align: center;
+  -webkit-align-items: center;
+  align-items: center;
+  -webkit-box-pack: center;
+  -webkit-justify-content: center;
+  justify-content: center;
 }
 
+/* 内容容器 */
 .landing-content {
   max-width: 400px;
   width: 100%;
@@ -408,17 +402,23 @@ body {
 
 /* ==================== 结果页 ==================== */
 .result-page {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
   width: 100%;
-  max-width: 500px;
+  min-height: 100%;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+  -webkit-flex-direction: column;
+  flex-direction: column;
+  -webkit-box-align: center;
+  -webkit-align-items: center;
+  align-items: center;
+  -webkit-box-pack: center;
+  -webkit-justify-content: center;
+  justify-content: center;
   padding: 20px;
   box-sizing: border-box;
-  max-height: 100vh;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
 }
 
 .result-container {
