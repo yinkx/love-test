@@ -75,6 +75,18 @@
   </div>
 
   <script>
+    // 调试信息（可删除）
+    function showDebugInfo() {
+      const debug = document.createElement('div');
+      debug.style.cssText = 'position:fixed;bottom:0;left:0;right:0;background:#000;color:#0f0;font:12px monospace;padding:10px;z-index:99999;';
+      debug.innerHTML = 'UA: ' + navigator.userAgent.substring(0, 50) + '...<br>' +
+        'window.innerHeight: ' + window.innerHeight + '<br>' +
+        'window.outerHeight: ' + window.outerHeight + '<br>' +
+        'visualViewport.height: ' + (window.visualViewport ? window.visualViewport.height : 'N/A');
+      document.body.appendChild(debug);
+    }
+    window.addEventListener('load', showDebugInfo);
+
     function showToast(message) {
       const toast = document.getElementById('error-toast');
       toast.textContent = message;
