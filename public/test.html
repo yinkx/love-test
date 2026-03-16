@@ -27,7 +27,7 @@
   <div class="heart-decor" aria-hidden="true">💓</div>
   <div class="heart-decor" aria-hidden="true">💕</div>
 
-  <div class="test-container">
+  <div class="test-container" id="test-container">
     <!-- 加载状态 -->
     <div id="loading-screen" class="loading-screen" role="status" aria-live="polite">
       <div class="loading-spinner" aria-hidden="true"></div>
@@ -65,5 +65,19 @@
   </div>
 
   <script type="module" src="src/scripts/test.js"></script>
+  <script>
+    // 修复微信浏览器居中问题：动态设置容器高度
+    function setContainerHeight() {
+      const container = document.getElementById('test-container');
+      // 使用 visualViewport API 获取实际可视高度（排除地址栏）
+      const visualHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+      container.style.minHeight = visualHeight + 'px';
+    }
+
+    // 页面加载和窗口大小变化时调整
+    window.addEventListener('load', setContainerHeight);
+    window.addEventListener('resize', setContainerHeight);
+    window.addEventListener('scroll', setContainerHeight);
+  </script>
 </body>
 </html>

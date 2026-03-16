@@ -154,7 +154,8 @@ body {
 
 /* ==================== 落地页 ==================== */
 .landing-container {
-  min-height: 100dvh; /* 使用动态视口高度，解决手机端地址栏问题 */
+  min-height: 100vh; /* fallback */
+  min-height: 100dvh; /* 现代浏览器 */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -238,7 +239,8 @@ body {
 
 /* ==================== 测试页 ==================== */
 .test-container {
-  min-height: 100dvh; /* 使用动态视口高度，解决手机端地址栏问题 */
+  min-height: 100vh; /* fallback */
+  min-height: 100dvh; /* 现代浏览器 */
   display: flex;
   align-items: center;
   justify-content: center;
